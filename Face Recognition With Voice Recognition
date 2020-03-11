@@ -1,0 +1,226 @@
+# This Program is use to Recognize the user face and take Voice as input
+
+import cv2
+import numpy as np
+from os import listdir
+from os.path import isfile, join
+import speech_recognition as sr
+import os
+import time
+import win32com.client
+import subprocess as sub
+
+data_path = 'F:/Pycharm/Image/'
+onlyfiles = [f for f in listdir(data_path) if isfile(join(data_path,f))]
+
+Training_Data, Labels = [], []
+
+for i, files in enumerate(onlyfiles):
+    image_path = data_path + onlyfiles[i]
+    images = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    Training_Data.append(np.asarray(images, dtype=np.uint8))
+    Labels.append(i)
+
+Labels = np.asarray(Labels, dtype=np.int32)
+
+model = cv2.face.LBPHFaceRecognizer_create()
+
+model.train(np.asarray(Training_Data), np.asarray(Labels))
+
+#print("Model Training Complete!!!!!")
+
+face_classifier = cv2.CascadeClassifier('C:/Users/hp/Desktop/haarcascade_frontalface_default.xml')
+
+#Face Detector Function
+
+def face_detector(img, size = 0.5):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_classifier.detectMultiScale(gray,1.3,5)
+
+    if faces is():
+        return img,[]
+
+    for(x,y,w,h) in faces:
+        cv2.rectangle(img, (x,y),(x+w,y+h),(0,255,255),2)
+        roi = img[y:y+h, x:x+w]
+        roi = cv2.resize(roi, (200,200))
+
+    return img,roi
+
+# Voice Recognasation Function
+def voice_rec():
+    app = 0
+    while True:
+        text = "Speak Anything Is To Be open In Computer"
+        speaker = win32com.client.Dispatch("SAPI.SpVoice")
+        speaker.speak(text)
+        time.sleep(1)
+        print("Speak Time",app)
+        r = sr.Recognizer()
+        with sr.Microphone() as source:
+            audio = r.listen(source)
+            try:
+
+                text1 = r.recognize_google(audio)
+
+                if text1 == "hello computer open the calculator":
+                    os.system('calc.exe')
+                    app = app + 1
+
+                elif text1 == "hello computer open the Notepad":
+                    os.system('notepad.exe')
+                    app = app + 1
+
+                elif text1 == "hello computer open the Mozilla Firefox":
+                    sub.Popen(["C:/Program Files (x86)/Mozilla Firefox/firefox.exe"])
+                    app = app + 1
+
+                elif text1 == "hello computer open the Google Chrome":
+                    sub.Popen(["C:/Program Files (x86)/Google/Chrome/Application/chrome.exe"])
+                    app = app + 1
+
+                elif text1 == "hello computer open the Internet Explorer":
+                    sub.Popen(["C:\Program Files\internet explorer\iexplore.exe"])
+                    app = app + 1
+
+                elif text1 == "hello computer open the Microsoft PowerPoint":
+                    Application = win32com.client.Dispatch("PowerPoint.Application")
+                    Application.Visible = True
+                    Presentation = Application.Presentations.Add()
+                    app = app + 1
+
+                elif text1 == "hello computer open the Microsoft Word":
+                    Application = win32com.client.Dispatch("Word.Application")
+                    Application.Visible = True
+                    Presentation = Application.Documents.Add()
+                    app = app + 1
+
+                elif text1 == "hello computer open the Microsoft Excel":
+                    Application = win32com.client.Dispatch("Excel.Application")
+                    Application.Visible = True
+                    Presentation = Application.Workbooks.Add()
+                    app = app + 1
+
+                elif text1 == "hello computer open the file explorer":
+                    sub.Popen(r'explorer /select,"C:\path\of\folder\file"')
+                    app = app + 1
+
+                elif text1 == "hello computer open the Mozilla Firefox with Gmail":
+                    sub.call([r'C:/Program Files (x86)/Mozilla Firefox/firefox.exe', '-new-tab', 'http://www.gmail.com/'])
+                    app = app + 1
+
+                elif text1 == "hello computer open the Google Chrome with Gmail":
+                    sub.call([r"C:/Program Files (x86)/Google/Chrome/Application/chrome.exe", '-new-tab','http://www.gmail.com/'])
+                    app = app + 1
+
+                elif text1 == "hello computer open the Google Chrome with Facebook":
+                    sub.call([r"C:/Program Files (x86)/Google/Chrome/Application/chrome.exe", '-new-tab','http://www.facebook.com/'])
+                    app = app + 1
+
+                elif text1 == "hello computer open the Python software":
+                    os.system('idle.exe')
+                    app = app + 1
+
+                elif text1 == "hello computer open the MS Paint":
+                    os.system('%windir%\system32\mspaint.exe')
+                    app = app + 1
+
+                elif text1 == "hello computer open the control panel":
+                    os.system('%windir%\System32\Control.exe')
+                    app = app + 1
+
+                elif text1 == "hello computer open the Adobe Photoshop":
+                    sub.Popen(["C:\Program Files (x86)\Adobe\Photoshop 7.0\Photoshop.exe"])
+                    app = app + 1
+
+                elif text1 == "hello computer open the Notepad plus plus":
+                    sub.Popen(['C:/Program Files (x86)/Notepad++/notepad++.exe'])
+                    app = app + 1
+
+                elif text == "hello computer open the Picasa 3":
+                    sub.Popen(["C:\Program Files (x86)\Google\Picasa3\Picasa3.exe"])
+                    app = app + 1
+
+                elif text1 == "ok computer close the application":
+                    text2 = "Your Application will be close"
+                    speaker = win32com.client.Dispatch("SAPI.SpVoice")
+                    speaker.speak(text2)
+                    break
+
+                else:
+                    text1 = "Your voice is not clear"
+                    speaker = win32com.client.Dispatch("SAPI.SpVoice")
+                    speaker.speak(text1)
+
+
+            except:
+                text1 ="Please speak something is to be open in Computer"
+                speaker = win32com.client.Dispatch("SAPI.SpVoice")
+                speaker.speak(text1)
+
+
+
+user = "Hello User Ready For Face Scanning"
+speaker = win32com.client.Dispatch("SAPI.SpVoice")
+speaker.speak(user)
+time.sleep(1)
+
+cap = cv2.VideoCapture(0)
+value = 0
+while True:
+
+    ret, frame = cap.read()
+
+    image, face = face_detector(frame)
+
+    try:
+        face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+        result = model.predict(face)
+
+        if result[1] < 500:
+            confidence = int(100*(1-(result[1])/300))
+            display_string = str(confidence)+'% Confidence it is user'
+        #cv2.putText(image,display_string,(100,120), cv2.FONT_HERSHEY_COMPLEX,1,(250,120,255),2)
+
+
+
+        if confidence > 90:
+
+            cv2.putText(image, "Unlocked", (250, 450), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
+            cv2.imshow('Face Cropper', image)
+            #value = 0
+            value = value + 1
+            #print("value of value is ",value)
+            if value == 20:
+                text = "Your are Valid user"
+                speaker = win32com.client.Dispatch("SAPI.SpVoice")
+                speaker.Speak(text)
+                cap.release()
+                cv2.destroyAllWindows()
+                time.sleep(1)
+                img2 = cv2.imread("F:/Pycharm/ok-2282499_960_720.png")
+                cv2.imshow("Valid user", img2)
+                cv2.waitKey(0)
+                cv2.destroyAllWindows()
+                time.sleep(1)
+                voice_rec()
+                time.sleep(1)
+                break
+
+
+        else:
+            cv2.putText(image, "Locked", (250, 450), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 2)
+            cv2.imshow('Face Cropper', image)
+
+
+    except:
+        cv2.putText(image, "Face Not Found", (250, 450), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
+        cv2.imshow('Face Cropper', image)
+        pass
+
+    if cv2.waitKey(1)==13:
+        break
+
+
+cap.release()
+cv2.destroyAllWindows()
